@@ -58,7 +58,7 @@ class DigitDatum:
         return DigitDatum(datum['pixels'], datum['label'])
 
     def to_json(self):
-        {
+        return {
             'pixels': self.pixels,
             'label': self.label,
         }
