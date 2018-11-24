@@ -1,3 +1,5 @@
+import math
+
 class Perceptron:
     def __init__(self, layer, inputs):
         self.layer = layer
@@ -7,7 +9,20 @@ class Perceptron:
         """
         Take inner product of weights and example, pass through activation function
         """
-        pass
+        weighted_sum = 0
+        for name, value in example.items():
+            weighted_sum += self.weights[name]*value
+
+        return linear_rectify(weighted_sum)
+
+
+def linear_rectify(val):
+    return val if (val > 0) else 0
+
+
+def sigmoid(val):
+    return 1 / (1 + math.exp(-val))
+
 
 class PerceptronLayer:
     def __init__(self, labels, inputs):
