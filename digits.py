@@ -5,14 +5,7 @@ class DigitData:
         """
         data is a list of DigitDatum
         """
-        pass
-
-    @staticmethod
-    def from_idx(data_file, label_file):
-        """
-        Returns a DigitData instance
-        """
-        pass
+        self.data = data
 
     @staticmethod
     def from_json(json_file):
@@ -40,7 +33,8 @@ class DigitData:
 
 class DigitDatum:
     def __init__(self, pixels, label):
-        pass
+        self.pixels = pixels
+        self.label = label
 
     def features(self):
         """
@@ -62,4 +56,8 @@ class DigitDatum:
             'pixels': self.pixels,
             'label': self.label,
         }
+
+    def print_digit(self):
+        for row in self.pixels:
+            print(''.join(['#' if c >= 128 else ' ' for c in row]))
 

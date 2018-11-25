@@ -1,4 +1,4 @@
 .*.sw[po]
 *.pyc
 
-data/
+data/*.json
