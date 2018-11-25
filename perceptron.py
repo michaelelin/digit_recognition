@@ -40,11 +40,16 @@ class PerceptronLayer:
         pass
 
     def feed_forward(self, example):
-        pass
+        return { label: node.feed_forward(example) for label, node in self.nodes.iteritems() }
 
     def classify(self, example):
         """
         Runs example through each node, returns the index of the perceptron that maximizes
         confidence
         """
-        pass
+        best_label = None
+        best_value = None
+        for label, value in self.feed_forward(example).iteritems():
+            if best_value is None or value > best_value:
+                best_label = label
+        return best_label
