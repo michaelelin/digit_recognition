@@ -58,6 +58,13 @@ class DigitDatum:
         }
 
     def print_digit(self):
+        def format_value(val):
+            if val > 128:
+                return '#'
+            elif val > 0:
+                return '-'
+            else:
+                return ' '
         for row in self.pixels:
-            print(''.join(['#' if c >= 128 else ' ' for c in row]))
+            print(''.join([format_value(val) for val in row]))
 
