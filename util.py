@@ -1,13 +1,9 @@
-class FeatureVector(dict):
 
-	def __init__(self):
-		super(FeatureVector, self).__init__()
+def subtract_vectors(v1, v2):
+	return { feature: v1[feature] - v2[feature] for feature in v1.keys() }
 
-	def __sub__(self, other):
-		return FeatureVector({ feature: self[feature] - other[feature] for feature in self.keys() })
-
-	def __mul__(self, other):
-		sum = 0
-		for feature in self.keys():
-			sum += self[feature] * other[feature]
-		return sum
+def dot_product(v1, v2):
+	sum = 0
+	for feature in v1.keys():
+		sum += v1[feature] * v2[feature]
+	return sum

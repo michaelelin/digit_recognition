@@ -1,4 +1,5 @@
 import math
+from util import subtract_vectors, dot_product
 
 # the maximum value for tau. from what I understand, we're supposed to play around with
 # this value and find the constant that works best.
@@ -53,10 +54,8 @@ class PerceptronLayer:
                 observed_perceptron.weights[feature] -= value * tau
 
     def learning_rate(observed_weights, expected_weights, features):
-        w_obs = FeatureVector(observed_weights)
-        w_exp = FeatureVector(expected_weights)
-        f = FeatureVector(features)
-        return min((((w_obs - w_exp) * f) + 1) / ((f * f) * 2), C)
+        return min((dot_product(subtract_vectors(observed_weights, expected_weights), features) + 1) 
+                    / (dot_product(features, features) * 2), C)
 
     def feed_forward(self, example):
         return { label: node.feed_forward(example) for label, node in self.nodes.iteritems() }
