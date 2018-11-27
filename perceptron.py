@@ -1,4 +1,9 @@
 import math
+from util import subtract_vectors, dot_product
+
+# the maximum value for tau. from what I understand, we're supposed to play around with
+# this value and find the constant that works best.
+C = 1
 
 class Perceptron:
     def __init__(self, layer, inputs):
@@ -37,7 +42,20 @@ class PerceptronLayer:
         If we guessed the correct label, do nothing
         If we got it wrong, change the weights
         """
-        pass
+        observed_label = self.classify(example)
+
+        if label != observed_label:
+            expected_perceptron = self.nodes[label]
+            observed_perceptron = self.nodes[observed_label]
+            tau = learning_rate(observed_perceptron.weights, expected_perceptron.weights, example)
+
+            for feature, value in example.items():
+                expected_perceptron.weights[feature] += value * tau
+                observed_perceptron.weights[feature] -= value * tau
+
+    def learning_rate(observed_weights, expected_weights, features):
+        return min((dot_product(subtract_vectors(observed_weights, expected_weights), features) + 1) 
+                    / (dot_product(features, features) * 2), C)
 
     def feed_forward(self, example):
         return { label: node.feed_forward(example) for label, node in self.nodes.iteritems() }
