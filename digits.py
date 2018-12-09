@@ -1,4 +1,6 @@
 import json
+import itertools
+import random
 
 class DigitData:
     def __init__(self, data):
@@ -18,9 +20,26 @@ class DigitData:
             ...
         ]
         """
+        print('Loading data from %s' % json_file)
         with open(json_file, 'r') as f:
             data = json.load(f)
+        print('Loaded.')
         return DigitData([DigitDatum.from_json(obj) for obj in data])
+
+    def labels(self):
+        return set(datum.label for datum in self.data)
+
+    def features(self):
+        return self.data[0].features().keys()
+
+    def shuffle(self):
+        random.shuffle(self.data)
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def __len__(self):
+        return len(self.data)
 
     def save(self, json_file):
         data = [datum.to_json() for datum in self.data]
@@ -34,7 +53,8 @@ class DigitData:
 class DigitDatum:
     def __init__(self, pixels, label):
         self.pixels = pixels
-        self.label = label
+        self.label = str(label)
+        self._features = None
 
     def features(self):
         """
@@ -45,7 +65,10 @@ class DigitDatum:
         - components=3
         - Other features...
         """
-        pass
+        if not self._features:
+            self._features = { str((x, y)): self.pixels[y][x] for y, x in
+                              itertools.product(range(len(self.pixels)), range(len(self.pixels[0]))) }
+        return self._features
 
     @staticmethod
     def from_json(datum):
