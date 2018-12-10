@@ -53,7 +53,7 @@ class DigitData:
 class DigitDatum:
     def __init__(self, pixels, label):
         self.pixels = pixels
-        self.label = str(label)
+        self.label = label
         self._features = None
 
     def features(self):
@@ -66,7 +66,7 @@ class DigitDatum:
         - Other features...
         """
         if not self._features:
-            self._features = { str((x, y)): self.pixels[y][x] for y, x in
+            self._features = { (x + y * len(self.pixels[0])): self.pixels[y][x] for y, x in
                               itertools.product(range(len(self.pixels)), range(len(self.pixels[0]))) }
         return self._features
 

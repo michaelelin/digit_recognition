@@ -102,10 +102,11 @@ class PerceptronLayer:
     def load(filename):
         with open(filename, 'r') as f:
             serialized = json.load(f)
-        labels = serialized.keys()
-        inputs = serialized[labels[0]]['weights'].keys()
+        labels = map(int, serialized.keys())
+        inputs = map(int, serialized[labels[0]]['weights'].keys())
         layer = PerceptronLayer(labels, inputs)
         for label, node in layer.nodes.iteritems():
             node.bias = serialized[label]['bias']
-            node.weights = serialized[label]['weights']
+            node.weights = { int(feature): value for feature, value in
+                            serialized[label]['weights'].iteritems() }
         return layer
