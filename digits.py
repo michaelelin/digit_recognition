@@ -26,11 +26,11 @@ class DigitData:
         print('Loaded.')
         return DigitData([DigitDatum.from_json(obj) for obj in data])
 
-    def labels(self):
-        return set(datum.label for datum in self.data)
+    def num_labels(self):
+        return len(set(datum.label for datum in self.data))
 
-    def features(self):
-        return self.data[0].features().keys()
+    def num_features(self):
+        return len(self.data[0].features())
 
     def shuffle(self):
         random.shuffle(self.data)
@@ -55,6 +55,7 @@ class DigitDatum:
         self.pixels = pixels
         self.label = label
         self._features = None
+        self.features()
 
     def features(self):
         """
@@ -66,8 +67,9 @@ class DigitDatum:
         - Other features...
         """
         if not self._features:
-            self._features = { (x + y * len(self.pixels[0])): self.pixels[y][x] for y, x in
-                              itertools.product(range(len(self.pixels)), range(len(self.pixels[0]))) }
+            width = len(self.pixels[0])
+            height =  len(self.pixels)
+            self._features = [self.pixels[i / width][i % width] for i in xrange(width * height)]
         return self._features
 
     @staticmethod

@@ -22,7 +22,7 @@ if __name__ == '__main__':
     train_data = DigitData.from_json(sys.argv[1])
     test_data = DigitData.from_json(sys.argv[2])
     model_file = sys.argv[3]
-    layer = PerceptronLayer(train_data.labels(), train_data.features())
+    layer = PerceptronLayer(train_data.num_labels(), train_data.num_features())
     try:
         train(layer, train_data, test_data)
     except KeyboardInterrupt:

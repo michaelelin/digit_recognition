@@ -8,9 +8,9 @@ from util import subtract_vectors, dot_product
 C = 0.004
 
 class Perceptron:
-    def __init__(self, layer, inputs):
+    def __init__(self, layer, num_weights):
         self.layer = layer
-        self.weights = { feature: 0.0 for feature in inputs }
+        self.weights = [0.0] * num_weights
         self.bias = 0.0
 
     def feed_forward(self, example):
@@ -18,8 +18,8 @@ class Perceptron:
         Take inner product of weights and example, pass through activation function
         """
         weighted_sum = 0
-        for name, value in example.items():
-            weighted_sum += self.weights[name]*value
+        for weight, value in zip(self.weights, example):
+            weighted_sum += weight * value
         weighted_sum += self.bias
 
         return linear_rectify(weighted_sum)
@@ -34,8 +34,8 @@ def sigmoid(val):
 
 
 class PerceptronLayer:
-    def __init__(self, labels, inputs):
-        self.nodes = { label: Perceptron(self, inputs) for label in labels }
+    def __init__(self, num_labels, num_weights):
+        self.nodes = [Perceptron(self, num_weights) for _ in range(num_labels)]
 
     def train(self, example, label):
         """
@@ -52,13 +52,13 @@ class PerceptronLayer:
             observed_perceptron = self.nodes[observed_label]
             tau = self.learning_rate(observed_perceptron.weights, expected_perceptron.weights, example)
 
-            for feature, value in example.items():
-                expected_perceptron.weights[feature] += value * tau
-                observed_perceptron.weights[feature] -= value * tau
+            for i, value in enumerate(example):
+                expected_perceptron.weights[i] += value * tau
+                observed_perceptron.weights[i] -= value * tau
             expected_perceptron.bias += tau
             observed_perceptron.bias -= tau
 
-    def evaluate(self, data, progress=False):
+    def evaluate(self, data, progress=False, threads=1):
         correct = 0
 
         for datum in (tqdm(data) if progress else data):
@@ -71,7 +71,7 @@ class PerceptronLayer:
                     / (dot_product(features, features) * 2), C)
 
     def feed_forward(self, example):
-        return { label: node.feed_forward(example) for label, node in self.nodes.iteritems() }
+        return [node.feed_forward(example) for node in self.nodes]
 
     def classify(self, example):
         """
@@ -80,7 +80,7 @@ class PerceptronLayer:
         """
         best_label = None
         best_value = None
-        for label, value in self.feed_forward(example).iteritems():
+        for label, value in enumerate(self.feed_forward(example)):
             if best_value is None or value > best_value:
                 best_label = label
                 best_value = value
@@ -88,13 +88,12 @@ class PerceptronLayer:
 
     def save(self, filename):
         print('Saving weights to %s' % filename)
-        serialized = {
-            label: {
-                'weights': { feature: value for feature, value in
-                            perceptron.weights.iteritems() },
+        serialized = [
+            {
+                'weights': perceptron.weights,
                 'bias': perceptron.bias,
-            } for label, perceptron in self.nodes.iteritems()
-        }
+            } for perceptron in self.nodes
+        ]
         with open(filename, 'w') as f:
             json.dump(serialized, f)
 
@@ -102,11 +101,10 @@ class PerceptronLayer:
     def load(filename):
         with open(filename, 'r') as f:
             serialized = json.load(f)
-        labels = map(int, serialized.keys())
-        inputs = map(int, serialized[labels[0]]['weights'].keys())
-        layer = PerceptronLayer(labels, inputs)
-        for label, node in layer.nodes.iteritems():
-            node.bias = serialized[label]['bias']
-            node.weights = { int(feature): value for feature, value in
-                            serialized[label]['weights'].iteritems() }
+        num_labels = len(serialized)
+        num_features = len(serialized[0]['weights'])
+        layer = PerceptronLayer(num_labels, num_features)
+        for ser_node, node in zip(serialized, layer.nodes):
+            node.bias = ser_node['bias']
+            node.weights = ser_node['weights']
         return layer
