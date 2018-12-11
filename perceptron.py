@@ -11,8 +11,8 @@ C = 0.004
 class Perceptron:
     def __init__(self, layer, num_weights):
         self.layer = layer
-        self.weights = Vector(random.gauss(0, 0.0001) for _ in xrange(num_weights))
-        self.bias = random.gauss(0, 0.0001)
+        self.weights = Vector(random.gauss(0, 0.01) for _ in xrange(num_weights))
+        self.bias = random.gauss(0, 0.01)
 
     def feed_forward(self, example):
         """

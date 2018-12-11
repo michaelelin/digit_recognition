@@ -1,10 +1,11 @@
 import sys
 from tqdm import tqdm
 
+import activation
 from digits import DigitData
 from model import NetworkModel
 
-EPOCHS = 10
+EPOCHS = 60
 
 def train(model, train_data, test_data, model_file, epochs=EPOCHS):
     try:
@@ -27,7 +28,8 @@ if __name__ == '__main__':
     test_data = DigitData.from_json(sys.argv[2])
     model_file = sys.argv[3]
     #layer = PerceptronLayer(train_data.num_labels(), train_data.num_features())
-    model = NetworkModel(train_data.num_features(), 30, train_data.num_labels())
+    model = NetworkModel(train_data.num_features(), 30, 30, train_data.num_labels(),
+                         activation_fns=[activation.ReLU, activation.ReLU, activation.Sigmoid])
     train(model, train_data, test_data, model_file)
     # write weights to sys.argv[2]
 

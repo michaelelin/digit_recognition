@@ -9,8 +9,12 @@ LEARNING_RATE = 3.0
 class NetworkModel:
     # NetworkModel(784, 10)
     # NetworkModel(784, 30, 10)
-    def __init__(self, *node_counts):
-        self.layers = [PerceptronLayer(n2, n1, activation.Sigmoid) for n1, n2 in zip(node_counts, node_counts[1:])]
+    def __init__(self, *node_counts, **kwargs):
+        activation_fns = kwargs.get('activation_fns')
+        if not activation_fns:
+            activation_fns = [activation.Sigmoid] * (len(node_counts) - 1)
+        self.layers = [PerceptronLayer(n2, n1, activation_fn)
+                       for n1, n2, activation_fn in zip(node_counts, node_counts[1:], activation_fns)]
 
     def feed_forward(self, example):
         outputs = example
