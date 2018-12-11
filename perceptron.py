@@ -1,4 +1,3 @@
-import json
 import random
 
 import activation
@@ -10,22 +9,20 @@ from util import Vector
 C = 0.004
 
 class Perceptron:
-    def __init__(self, layer, num_weights, activation_fn):
+    def __init__(self, layer, num_weights):
         self.layer = layer
-        self.weights = Vector(random.gauss(0, 0.001) for _ in xrange(num_weights))
-        self.bias = random.gauss(0, 0.001)
-        self.activation_fn = activation_fn
+        self.weights = Vector(random.gauss(0, 0.0001) for _ in xrange(num_weights))
+        self.bias = random.gauss(0, 0.0001)
 
     def feed_forward(self, example):
         """
         Take inner product of weights and example, pass through activation function
         """
-        return self.activation_fn.calculate((self.weights.dot(example)) + self.bias)
+        return self.layer.activation_fn.calculate((self.weights.dot(example)) + self.bias)
 
 class PerceptronLayer:
     def __init__(self, num_labels, num_weights, activation_fn=activation.ReLU):
-        self.nodes = [Perceptron(self, num_weights, activation_fn)
-                      for _ in range(num_labels)]
+        self.nodes = [Perceptron(self, num_weights) for _ in range(num_labels)]
         self.activation_fn = activation_fn
 
     def train(self, example, label):
@@ -70,25 +67,21 @@ class PerceptronLayer:
                 best_value = value
         return best_label
 
-    def save(self, filename):
-        print('Saving weights to %s' % filename)
-        serialized = [
-            {
-                'weights': perceptron.weights,
-                'bias': perceptron.bias,
-            } for perceptron in self.nodes
-        ]
-        with open(filename, 'w') as f:
-            json.dump(serialized, f)
+    def serialize(self):
+        return {
+            'activation': self.activation_fn.name(),
+            'nodes': [{
+                'weights': node.weights,
+                'bias': node.bias,
+            } for node in self.nodes],
+        }
 
     @staticmethod
-    def load(filename):
-        with open(filename, 'r') as f:
-            serialized = json.load(f)
-        num_labels = len(serialized)
-        num_features = len(serialized[0]['weights'])
-        layer = PerceptronLayer(num_labels, num_features)
-        for ser_node, node in zip(serialized, layer.nodes):
-            node.bias = ser_node['bias']
-            node.weights = ser_node['weights']
+    def deserialize(ser):
+        num_labels = len(ser['nodes'])
+        num_weights = len(ser['nodes'][0]['weights'])
+        layer = PerceptronLayer(num_labels, num_weights, activation.from_name(ser['activation']))
+        for node_ser, node in zip(ser['nodes'], layer.nodes):
+            node.weights = Vector(node_ser['weights'])
+            node.bias = node_ser['bias']
         return layer

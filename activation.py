@@ -1,6 +1,12 @@
 import math
 
-class Linear:
+class ActivationFunction:
+    @classmethod
+    def name(cls):
+        return cls.NAME
+
+class Linear(ActivationFunction):
+    NAME = 'linear'
     @staticmethod
     def calculate(val):
         return val
@@ -9,7 +15,8 @@ class Linear:
     def derivative(val):
         return 1.0
 
-class ReLU:
+class ReLU(ActivationFunction):
+    NAME = 'relu'
     @staticmethod
     def calculate(val):
         return max(0.0, val)
@@ -21,7 +28,8 @@ class ReLU:
         else:
             return 0.0
 
-class Sigmoid:
+class Sigmoid(ActivationFunction):
+    NAME = 'sigmoid'
     @staticmethod
     def calculate(val):
         if val < -100.0:
@@ -34,3 +42,10 @@ class Sigmoid:
             return 0.0
         e = math.exp(-val)
         return e / ((1 + e) * (1 + e))
+
+
+ACTIVATION_FUNCTIONS = [Linear, ReLU, Sigmoid]
+def from_name(name):
+    for fn in ACTIVATION_FUNCTIONS:
+        if fn.name() == name:
+            return fn
