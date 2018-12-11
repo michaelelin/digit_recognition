@@ -2,6 +2,10 @@ import json
 import itertools
 import random
 
+from util import Vector
+
+CLASS_COUNT = 10
+
 class DigitData:
     def __init__(self, data):
         """
@@ -27,7 +31,7 @@ class DigitData:
         return DigitData([DigitDatum.from_json(obj) for obj in data])
 
     def num_labels(self):
-        return len(set(datum.label for datum in self.data))
+        return CLASS_COUNT
 
     def num_features(self):
         return len(self.data[0].features())
@@ -54,6 +58,8 @@ class DigitDatum:
     def __init__(self, pixels, label):
         self.pixels = pixels
         self.label = label
+        self.label_vec = Vector.zeros(CLASS_COUNT)
+        self.label_vec[self.label] = 1.0
         self._features = None
         self.features()
 
@@ -69,7 +75,8 @@ class DigitDatum:
         if not self._features:
             width = len(self.pixels[0])
             height =  len(self.pixels)
-            self._features = [self.pixels[i / width][i % width] for i in xrange(width * height)]
+            self._features = Vector(self.pixels[i / width][i % width] / 256.0
+                                    for i in xrange(width * height))
         return self._features
 
     @staticmethod

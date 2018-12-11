@@ -1,50 +1,34 @@
 import json
-import math
+import random
+
+import activation
 from tqdm import tqdm
-from util import subtract_vectors, dot_product
+from util import Vector
 
 # the maximum value for tau. from what I understand, we're supposed to play around with
 # this value and find the constant that works best.
 C = 0.004
 
 class Perceptron:
-    def __init__(self, layer, num_weights):
+    def __init__(self, layer, num_weights, activation_fn):
         self.layer = layer
-        self.weights = [0.0] * num_weights
-        self.bias = 0.0
+        self.weights = Vector(random.gauss(0, 0.001) for _ in xrange(num_weights))
+        self.bias = random.gauss(0, 0.001)
+        self.activation_fn = activation_fn
 
     def feed_forward(self, example):
         """
         Take inner product of weights and example, pass through activation function
         """
-        weighted_sum = 0
-        for weight, value in zip(self.weights, example):
-            weighted_sum += weight * value
-        weighted_sum += self.bias
-
-        return linear_rectify(weighted_sum)
-
-
-def linear_rectify(val):
-    return val if (val > 0) else 0
-
-
-def sigmoid(val):
-    return 1 / (1 + math.exp(-val))
-
+        return self.activation_fn.calculate((self.weights.dot(example)) + self.bias)
 
 class PerceptronLayer:
-    def __init__(self, num_labels, num_weights):
-        self.nodes = [Perceptron(self, num_weights) for _ in range(num_labels)]
+    def __init__(self, num_labels, num_weights, activation_fn=activation.ReLU):
+        self.nodes = [Perceptron(self, num_weights, activation_fn)
+                      for _ in range(num_labels)]
+        self.activation_fn = activation_fn
 
     def train(self, example, label):
-        """
-        example is a dict mapping feature name -> value
-
-        Classify example
-        If we guessed the correct label, do nothing
-        If we got it wrong, change the weights
-        """
         observed_label = self.classify(example)
 
         if label != observed_label:
@@ -52,9 +36,9 @@ class PerceptronLayer:
             observed_perceptron = self.nodes[observed_label]
             tau = self.learning_rate(observed_perceptron.weights, expected_perceptron.weights, example)
 
-            for i, value in enumerate(example):
-                expected_perceptron.weights[i] += value * tau
-                observed_perceptron.weights[i] -= value * tau
+            expected_perceptron.weights += example * tau
+            observed_perceptron.weights -= example * tau
+
             expected_perceptron.bias += tau
             observed_perceptron.bias -= tau
 
@@ -67,11 +51,11 @@ class PerceptronLayer:
         return float(correct) / len(data)
 
     def learning_rate(self, observed_weights, expected_weights, features):
-        return min((dot_product(subtract_vectors(observed_weights, expected_weights), features) + 1) 
-                    / (dot_product(features, features) * 2), C)
+        return min(((observed_weights - expected_weights).dot(features) + 1)
+                   / (features.dot(features) * 2), C)
 
     def feed_forward(self, example):
-        return [node.feed_forward(example) for node in self.nodes]
+        return Vector(node.feed_forward(example) for node in self.nodes)
 
     def classify(self, example):
         """
