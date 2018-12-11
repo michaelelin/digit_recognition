@@ -11,7 +11,6 @@ def train(model, train_data, test_data, model_file, epochs=EPOCHS):
     try:
         for i in range(epochs):
             print('Epoch %s' % i)
-            import ipdb; ipdb.set_trace()
             train_data.shuffle()
             for datum in tqdm(train_data.data[:10000]):
                 model.train(datum.features(), datum.label_vec)
