@@ -22,14 +22,11 @@ def train(model, train_data, test_data, model_file, epochs=EPOCHS):
         model.save(model_file)
 
 
-# python train.py data/train.json data/weights.json
+# python train.py data/train.json data/weights.json data/model.json
 if __name__ == '__main__':
     train_data = DigitData.from_json(sys.argv[1])
     test_data = DigitData.from_json(sys.argv[2])
     model_file = sys.argv[3]
-    #layer = PerceptronLayer(train_data.num_labels(), train_data.num_features())
-    model = NetworkModel(train_data.num_features(), 30, 30, train_data.num_labels(),
-                         activation_fns=[activation.ReLU, activation.ReLU, activation.Sigmoid])
+    model = NetworkModel(train_data.num_features(), 30, train_data.num_labels(),
+                         activation_fns=[activation.Sigmoid, activation.Sigmoid])
     train(model, train_data, test_data, model_file)
-    # write weights to sys.argv[2]
-
